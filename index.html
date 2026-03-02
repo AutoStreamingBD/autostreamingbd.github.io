@@ -1,40 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-    <title>YT Live Streamer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>StreamPro - YouTube Video to Live Stream Tool</title>
+    <meta name="description" content="Stream any YouTube video back to YouTube Live easily. Start your 5-minute free trial today with StreamPro.">
+    <meta name="keywords" content="YouTube Live, Live Streaming Tool, YT Streamer, Video to Live, 24/7 Live Stream">
+    <meta name="author" content="Your Brand Name">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="StreamPro - Professional YouTube Live Streamer">
+    <meta property="og:description" content="লাইভ স্ট্রিমিং এখন আরও সহজ। যেকোনো ভিডিও ইউটিউবে লাইভ করুন মাত্র এক ক্লিকে।">
+    <meta property="og:image" content="https://yourdomain.com/og-image.jpg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; }
-        input { padding: 10px; width: 300px; margin: 10px; }
-        button { padding: 10px 20px; background: red; color: white; border: none; cursor: pointer; }
+        body { font-family: 'Inter', 'Hind Siliguri', sans-serif; }
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
     </style>
 </head>
-<body>
-    <h2>YouTube Live Streamer (Free Trial)</h2>
-    <input type="text" id="videoUrl" placeholder="YouTube Video URL"><br>
-    <input type="text" id="streamKey" placeholder="Your YouTube Stream Key"><br>
-    <button onclick="startLive()">Start Live (5 Min Free)</button>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
 
-    <p id="msg"></p>
+    <div class="max-w-lg w-full glass-morphism rounded-3xl shadow-2xl overflow-hidden transform transition hover:scale-[1.01]">
+        
+        <div class="bg-white p-8 text-center border-b border-gray-100">
+            <div class="inline-block p-3 bg-red-100 rounded-2xl mb-4">
+                <svg class="w-10 h-10 text-red-600" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 tracking-tight">StreamPro</h1>
+            <p class="text-gray-500 mt-2 text-sm uppercase tracking-widest font-semibold">YouTube Live Automator</p>
+        </div>
+
+        <div class="p-8 space-y-6">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">YouTube Video URL</label>
+                    <input type="text" id="videoUrl" 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition duration-200 bg-gray-50" 
+                        placeholder="https://www.youtube.com/watch?v=...">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stream Key</label>
+                    <input type="password" id="streamKey" 
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition duration-200 bg-gray-50" 
+                        placeholder="xxxx-xxxx-xxxx-xxxx">
+                </div>
+            </div>
+
+            <button onclick="startLive()" id="liveBtn"
+                class="w-full bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold py-4 rounded-2xl shadow-lg transform active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
+                <span>Start 5-Min Free Trial</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </button>
+
+            <div id="statusBox" class="hidden p-4 rounded-xl text-sm font-medium"></div>
+
+            <p class="text-xs text-center text-gray-400">
+                By using our service, you agree to our Terms of Service.
+            </p>
+        </div>
+
+        <div class="bg-gray-50 p-4 text-center">
+            <a href="/plans" class="text-purple-600 font-semibold text-sm hover:underline">Upgrade to Premium for 24/7 Stream</a>
+        </div>
+    </div>
 
     <script>
         async function startLive() {
             const videoUrl = document.getElementById('videoUrl').value;
             const streamKey = document.getElementById('streamKey').value;
+            const btn = document.getElementById('liveBtn');
+            const statusBox = document.getElementById('statusBox');
 
-            const response = await fetch('http://localhost:5000/start-stream', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ videoUrl, streamKey, userId: 'user123' })
-            });
+            if(!videoUrl || !streamKey) {
+                showStatus("Please fill all fields!", "error");
+                return;
+            }
 
-            const data = await response.json();
-            document.getElementById('msg').innerText = data.message;
+            // UI Loading State
+            btn.disabled = true;
+            btn.innerText = "Connecting...";
+            showStatus("Initializing stream server...", "info");
 
-            // ৫ মিনিট পর অটো রিডাইরেক্ট (Frontend Safety)
-            setTimeout(() => {
-                alert("আপনার ফ্রি ট্রায়াল শেষ! প্লিজ সাবস্ক্রাইব করুন।");
-                window.location.href = "/plans.html"; 
-            }, 5 * 60 * 1000);
+            try {
+                const response = await fetch('http://localhost:5000/start-stream', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ videoUrl, streamKey, userId: 'user_' + Math.random().toString(36).substr(2, 9) })
+                });
+
+                const data = await response.json();
+                
+                if(data.status === "success") {
+                    showStatus("Live started! Your 5-minute trial is active.", "success");
+                    btn.classList.add("opacity-50", "cursor-not-allowed");
+                    btn.innerText = "Live is On Air";
+
+                    // Countdown to Redirect
+                    setTimeout(() => {
+                        alert("আপনার ৫ মিনিটের ফ্রি ট্রায়াল শেষ হয়েছে। লাইভ চালিয়ে যেতে আমাদের প্রিমিয়াম প্ল্যান গ্রহণ করুন।");
+                        window.location.href = "/plans.html"; 
+                    }, 5 * 60 * 1000);
+                } else {
+                    showStatus("Error: " + data.message, "error");
+                    btn.disabled = false;
+                    btn.innerText = "Start 5-Min Free Trial";
+                }
+            } catch (error) {
+                showStatus("Server not responding. Please check your backend.", "error");
+                btn.disabled = false;
+                btn.innerText = "Start 5-Min Free Trial";
+            }
+        }
+
+        function showStatus(msg, type) {
+            const statusBox = document.getElementById('statusBox');
+            statusBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-blue-100', 'text-blue-700');
+            
+            if(type === "error") statusBox.classList.add('bg-red-100', 'text-red-700');
+            if(type === "success") statusBox.classList.add('bg-green-100', 'text-green-700');
+            if(type === "info") statusBox.classList.add('bg-blue-100', 'text-blue-700');
+            
+            statusBox.innerText = msg;
         }
     </script>
 </body>
