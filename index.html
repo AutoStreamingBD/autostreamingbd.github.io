@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>YT Live Streamer</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px; }
+        input { padding: 10px; width: 300px; margin: 10px; }
+        button { padding: 10px 20px; background: red; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>YouTube Live Streamer (Free Trial)</h2>
+    <input type="text" id="videoUrl" placeholder="YouTube Video URL"><br>
+    <input type="text" id="streamKey" placeholder="Your YouTube Stream Key"><br>
+    <button onclick="startLive()">Start Live (5 Min Free)</button>
+
+    <p id="msg"></p>
+
+    <script>
+        async function startLive() {
+            const videoUrl = document.getElementById('videoUrl').value;
+            const streamKey = document.getElementById('streamKey').value;
+
+            const response = await fetch('http://localhost:5000/start-stream', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ videoUrl, streamKey, userId: 'user123' })
+            });
+
+            const data = await response.json();
+            document.getElementById('msg').innerText = data.message;
+
+            // ৫ মিনিট পর অটো রিডাইরেক্ট (Frontend Safety)
+            setTimeout(() => {
+                alert("আপনার ফ্রি ট্রায়াল শেষ! প্লিজ সাবস্ক্রাইব করুন।");
+                window.location.href = "/plans.html"; 
+            }, 5 * 60 * 1000);
+        }
+    </script>
+</body>
+</html>
