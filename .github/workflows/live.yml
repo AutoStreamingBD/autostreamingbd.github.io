@@ -1,24 +1,26 @@
-name: 5-Min Free Live
+name: AutoStreamingBD Trial Full HD
 on:
   workflow_dispatch:
     inputs:
-      stream_key:
-        description: 'YouTube Stream Key'
-        required: true
-      video_url:
-        description: 'Video URL'
-        required: true
+      stream_key: { required: true }
+      video_id: { required: true }
 
 jobs:
   stream:
     runs-on: ubuntu-latest
     steps:
-      - name: Install FFmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
-
-      - name: Start Streaming
+      - name: Setup Engine
         run: |
-          # ঠিক ৩০০ সেকেন্ড পর অটোমেটিক কিল হবে
-          timeout 300s ffmpeg -re -i "${{ github.event.inputs.video_url }}" \
-          -vcodec libx264 -preset veryfast -b:v 2500k -acodec aac -f flv \
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg yt-dlp
+          
+      - name: 5 Minute Full HD Stream
+        run: |
+          # ইউটিউব আইডি থেকে সরাসরি ভিডিও লিংক বের করা এবং স্ট্রীম করা
+          VIDEO_URL=$(yt-dlp -f "bestvideo[height<=1080]+bestaudio/best[height<=1080]" -g "https://www.youtube.com/watch?v=${{ github.event.inputs.video_id }}")
+          
+          timeout 300s ffmpeg -re -i "$VIDEO_URL" \
+          -vcodec libx264 -preset superfast -b:v 4500k -maxrate 5000k -bufsize 9000k \
+          -pix_fmt yuv420p -g 60 -acodec aac -b:a 128k -ar 44100 -f flv \
           "rtmp://a.rtmp.youtube.com/live2/${{ github.event.inputs.stream_key }}" || true
+          
